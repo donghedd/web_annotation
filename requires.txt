@@ -1,0 +1,6 @@
+gunicorn
+nginx
+flask
+flask-wtf
+flask-bootstrap
+gevent

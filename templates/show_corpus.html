@@ -1,0 +1,68 @@
+{% extends "bootstrap/base.html" %}
+{% block content %}
+<div class="jumbotron jumbotron-fluid" style="margin-bottom: 1px">
+    <div class="container">
+        <h2 class="display-4">语料标注</h2>
+        <p class="lead">欢迎 <label class="text-success"> {{username}} </label> 参加语料标注计划，感谢你对学科知识结构化的贡献！</p>
+    </div>
+</div>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page"><a href="#">语料标注</a></li>
+        <li class="breadcrumb-item "><a href="{{url_for('select_corpus')}}">重新选择语料</a></li>
+        <li class="breadcrumb-item "><a href="{{url_for('index')}}">返回登录</a></li>
+    </ol>
+</nav>
+<div class="card pull-left" style="width: 80%; position: absolute; margin-left: 15px">
+    <!--    需要传一个参数过去，让传递的参数作为命名文件-->
+    <form action="{{url_for('labeled_res', rename=path)}}" method="post" class="form-inline">
+        {{form.csrf_token}}
+        {% for sent in sentences %}
+        {% set idx=loop %}
+        {% set current_idx_sentence=index_sentence+loop.index %}
+        <label for="">句子{{current_idx_sentence}}</label>
+        {% for wd in sent %}
+        <label>
+            <button class="btn btn-light" type="button"
+                    style="width: 30px;font-size: 12px; padding-left: 8px;padding-right: 8px ">{{ wd }}
+            </button>
+        </label>
+        {% endfor %}
+        <br>
+
+        <label for="">标句{{ current_idx_sentence }}</label>
+        <!--  这个部分的代码是对标注的语料结果进行信息包裹：包括了第几句话、第几句话中的第几个字-->
+        {% for wd in sent %}
+        <label>
+            <!--  这个input是一个需要标注的文本框，表示第几句话以及该句话中的第几个字-->
+            <input name="sent{{current_idx_sentence}}{{loop.index}}" type="text"
+                   style="width: 30px; color:red; height: 30px; font-size: 8px; padding-left: 8px;padding-right: 8px"
+                   class="form-control mb-1" required="required" value='0'>
+            <input name="word{{current_idx_sentence}}{{loop.index}}" type="text" style="font-size:8px; width: 30px; display: none"
+                   class="from-control mb-1 .d-none" value={{wd}} readonly="True">
+        </label>
+        {% endfor %}
+        <br>
+        {% endfor %}
+        <br>
+        <input type="submit" value="提交" class="btn btn-primary mb-2">
+        <input type="reset" value="重标" class="btn btn-primary mb-2">
+    </form>
+</div>
+<!--<div class="card pull-right navbar navbar-fixed-bottom " style="width: 20rem; position: relative; margin-right: 10px">-->
+<!--    <div class="list-group">-->
+<!--        <li class="list-group-item list-group-item-success">B-LOC</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-THE</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-DAT</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-COU</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-ASS</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-PAP</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-JOU</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-PER</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-ORG</li>-->
+<!--        <li class="list-group-item list-group-item-success">B-BOO</li>-->
+<!--    </div>-->
+<!--</div>-->
+{% include "ner_types.html" %}
+{% include "footer.html" %}
+{% endblock %}

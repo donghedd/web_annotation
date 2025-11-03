@@ -1,0 +1,10 @@
+{% block content %}
+<div class="card pull-right navbar navbar-fixed-bottom " style="width: 15%; position: relative; margin-right: 12px">
+    <div class="list-group" style="font-size: 12px;text-align: center;">
+        <li class="list-group-item list-group-item-success">起始标签索引->标签 ::: 结束标签索引->标签</li>
+        {% for ner in ners %}
+        <li class="list-group-item list-group-item-success">{{ ner[0] }}-->{{ner[1]}}  :::  {{ner[2]}}-->{{ner[3]}}</li>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

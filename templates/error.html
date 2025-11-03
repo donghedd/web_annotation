@@ -1,0 +1,20 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}提交失败{% endblock %}
+
+{% block content %}
+    <div class="card" style="width: 32rem; margin: 50px auto">
+      <img src="..." class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title">❌错误！</h5>
+        <img src="error.jpeg" class="card-img-top" alt="...">
+        {% if error_msg %}
+        <p class="card-text">{{error_msg}}</p>
+        {% endif %}
+        <p class="card-text">遇到了错了，请联系管理员</p>
+          <address>
+            管理员: <a href="mailto:lixu2019@zju.edu.cn">李旭</a>.<br>
+          </address>
+        <a href="{{url_for('index')}}" class="btn btn-primary">返回</a>
+      </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}选择需要标注的语料{% endblock %}
+
+{% block body %}
+<div class="jumbotron jumbotron-fluid" style="margin-bottom: 1px">
+    <div class="container">
+        <h2 class="display-4">语料标注</h2>
+        <p class="lead"><label class="text-success"> {{name}} </label>,请选择您要标注的语料章节！</p>
+    </div>
+</div>
+<div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page"><a href="#">语料标注</a></li>
+            <li class="breadcrumb-item "><a href="{{url_for('select_corpus')}}">重新选择语料</a></li>
+            <li class="breadcrumb-item "><a href="{{url_for('index')}}">返回登录</a></li>
+        </ol>
+    </nav>
+</div>
+<div class="list-group">
+    {{ form.csrf_token }}
+    <form action="">
+        {% for key, value in corpus.items() %}
+        <a href={{ url_for('show_corpus', file_path=key ) }} class="list-group-item list-group-item-action">
+        第{{loop.index}}章节
+        <span class="pull-right">
+            已完成标注句数:<label class="text-success"
+                           style="width: 35px; margin-left: 2px;">{{progress[loop.index-1]}}</label>
+            总共需标注句数:<label class="text-danger" style="width: 35px; margin-left: 2px;">{{((value+1)/2)|round|int}}</label>
+        </span>
+        </a>
+        {% endfor %}
+
+    </form>
+</div>
+
+{% include "footer.html" %}
+{% endblock%}
