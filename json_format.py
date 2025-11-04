@@ -7,9 +7,13 @@
 # 并将上述转换的结构写入到新的文件中
 
 import json
-import pandas as pd
-import os
 import logging
+from pathlib import Path
+from typing import Union
+
+import pandas as pd
+
+from path_utils import ensure_directory, resolve_path
 
 
 # output_path = 'labeled_dataset/labeled_results/'
@@ -17,18 +21,16 @@ import logging
 # inputFile = 'labeled_dataset/chap11.json'
 
 
-def check_file_exist(readFile):
+def check_file_exist(readFile: Union[str, Path]):
     '''
     :param readFile: 输入需要读入的文件地址，路径+文件名
     :return: boolean
     该函数判断输入的文件名是否存在
     '''
-    if os.path.exists(readFile):
-        return True
-    return False
+    return resolve_path(readFile).exists()
 
 
-def format_json_to_dataFrame(outpath, fileName, readFile):
+def format_json_to_dataFrame(outpath: Union[str, Path], fileName: str, readFile: Union[str, Path]):
     """
     :param path: output path , which is a directory path
     :param fileName: identify the target file name
@@ -37,10 +39,10 @@ def format_json_to_dataFrame(outpath, fileName, readFile):
     这个程序是通过前台标注后，提交传过来的一个json文件，将这个json文件转换成目标的dataFrame格式，并输出
     """
     if check_file_exist(readFile):
-        with open(readFile, 'r') as js:
+        input_path = resolve_path(readFile)
+        with input_path.open('r', encoding='utf-8') as js:
             res = json.load(js)
-        js.close()
-        del res['csrf_token']  # 删除表单提交后，网页自带的csrf_token行内容；
+        res.pop('csrf_token', None)  # 删除表单提交后，网页自带的csrf_token行内容；
         res_list = list(res)
         # step1 删除空白，未标注的单词
         sentences = res_list[::2]  # 筛选出句子标识符
@@ -55,7 +57,9 @@ def format_json_to_dataFrame(outpath, fileName, readFile):
             'words_labels': words_labels
         })
         # filter_labeled_sentences = new_labeled_data[new_labeled_data['words_labels'] != '']  # 筛选出仅完成标注的那些句子和字符； 更新：不需要筛选，因为后期训练的时候，标点符号也需要纳入考虑；
-        new_labeled_data.to_csv(outpath + fileName, mode='a+', index=False, header=False)
+        output_dir = ensure_directory(outpath)
+        output_file = output_dir / fileName
+        new_labeled_data.to_csv(output_file, mode='a+', index=False, header=False)
         return True
     else:
         logging.info('Files are not found!')

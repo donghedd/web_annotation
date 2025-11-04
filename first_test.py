@@ -21,6 +21,7 @@ from flask_wtf.csrf import CSRFProtect
 import list_current_coupus
 import configparser
 import update_config
+from path_utils import CONFIG_PATH, as_config_path, ensure_directory
 
 # 初始化csrf保护机制
 csrf = CSRFProtect()
@@ -54,13 +55,20 @@ def index():
     if request.method == 'POST':
         # 读入全局配置文件
         cfg = configparser.ConfigParser()
-        cfg.read('config.ini')
+        cfg.read(CONFIG_PATH, encoding='utf-8')
         if update_config.check_login(request.form['username1'], request.form['pwd']):
 
             session['username'] = request.form['username1']
             all_corpus = list_current_coupus.list_chapter_len()
-
-            global_progress = list(cfg['INITIAL'].values())
+            if all_corpus:
+                global_progress = []
+                for key in all_corpus.keys():
+                    try:
+                        global_progress.append(cfg.getint('INITIAL', key))
+                    except (configparser.NoOptionError, configparser.NoSectionError, ValueError):
+                        global_progress.append(0)
+            else:
+                global_progress = []
 
             update_config.update_config_keys(all_corpus.keys())
             username = request.form['username1']
@@ -81,11 +89,19 @@ def select_corpus():
         # form = FlaskForm()
         # 读入全局配置文件
         cfg = configparser.ConfigParser()
-        cfg.read('config.ini')
+        cfg.read(CONFIG_PATH, encoding='utf-8')
 
         all_corpus = list_current_coupus.list_chapter_len()
-        global_progress = list(cfg['INITIAL'].values())
-        username = session['username']
+        if all_corpus:
+            global_progress = []
+            for key in all_corpus.keys():
+                try:
+                    global_progress.append(cfg.getint('INITIAL', key))
+                except (configparser.NoOptionError, configparser.NoSectionError, ValueError):
+                    global_progress.append(0)
+        else:
+            global_progress = []
+        username = session.get('username')
         if username:
             return render_template('select_corpus.html', form=form, corpus=all_corpus, progress=global_progress,
                                    name=username)
@@ -106,12 +122,18 @@ def show_corpus():
     form = FlaskForm()
     if request.method == 'GET' and request.args.get('file_path'):
         cfg = configparser.ConfigParser()
-        cfg.read('config.ini')
+        cfg.read(CONFIG_PATH, encoding='utf-8')
         lines = cfg.getint('GLOBAL', 'load_lines')
         filePath = request.args.get('file_path')
         initial_index = cfg.getint('INITIAL', filePath)
-        res = load_sents2(filePath, initial_index, lines)
-        ners = load_ners()
+        try:
+            res = load_sents2(filePath, initial_index, lines)
+        except FileNotFoundError:
+            return render_template('error.html', error_msg="未找到请求的语料文件，请检查配置。")
+        try:
+            ners = load_ners()
+        except FileNotFoundError:
+            ners = []
         username = session['username']
         return render_template('show_corpus.html', sentences=res, form=form, path=filePath,
                                index_sentence=initial_index, ners=ners, username=username)
@@ -123,30 +145,33 @@ def show_corpus():
 @app.route('/labeled_res', methods=['POST'])
 def labeled_res():
     # form = UserForm()
-    write_file_path = 'labeled_dataset/raw_labeled_data_from_web/'
-    output_path = 'labeled_dataset/labeled_results/'
+    cfg = configparser.ConfigParser()
+    cfg.read(CONFIG_PATH, encoding='utf-8')
+    write_file_path = cfg.get('PATHS', 'raw_submit_dir', fallback='labeled_dataset/raw_labeled_data_from_web')
+    output_path = cfg.get('PATHS', 'labeled_results_dir', fallback='labeled_dataset/labeled_results')
     output_fileName = request.args.get('rename').split('/')[-1]  # 获取进行编辑的文件名全程，默认是csv格式；
     raw_fileName = output_fileName.split('.')[0] + '.json'
     # 下面是将表单form中获取的数据，进行格式化处理，将处理的结果写入到一个文件名（wirte_file_path）中
     res = request.form.to_dict()
-    res = json.dumps(res)
-    with open(write_file_path + raw_fileName, 'w') as w:
+    res = json.dumps(res, ensure_ascii=False)
+    raw_dir = ensure_directory(write_file_path)
+    output_dir = ensure_directory(output_path)
+    raw_file_path = raw_dir / raw_fileName
+    with raw_file_path.open('w', encoding='utf-8') as w:
         w.writelines(res)
-        w.close()
-    output_res_status = json_format.format_json_to_dataFrame(output_path, output_fileName,
-                                                             write_file_path + raw_fileName)
+    output_res_status = json_format.format_json_to_dataFrame(output_dir, output_fileName,
+                                                             raw_file_path)
     if output_res_status:
         # 如果每次提交成功，也就是output_res_status为True，就从源文件中删除对应的行数；
         # 确定源文件是哪个？
         # 更新本次完成标注的句子数量
         # 读入全局配置文件
-        cfg = configparser.ConfigParser()
-        cfg.read('config.ini')
         current_file = request.args.get('rename')
         finished_lines = cfg.getint('INITIAL', current_file) + cfg.getint('GLOBAL', 'load_lines')  # 表示当前已经完成标注的语料行数
 
         if update_config.update_config(current_file, finished_lines):
-            return render_template('success.html', output_file=output_path + output_fileName)
+            output_display = as_config_path(output_dir / output_fileName)
+            return render_template('success.html', output_file=output_display)
         else:
             return "本次标注的语料还未更新到最新状态，请联系管理员，或重新操作！"
     return render_template('error.html')

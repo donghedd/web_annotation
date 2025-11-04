@@ -9,6 +9,8 @@ import numpy as np
 from pprint import pprint
 import configparser
 
+from path_utils import CONFIG_PATH, resolve_path
+
 
 # to_label_corpus_path = 'labeled_dataset/to_labels_corpus/label_chap1.csv'
 
@@ -19,9 +21,9 @@ def load_sents(path_corpus, limited_lines=5):
     :param limited_lines: 每一次读取的行数
     :return: 读取的结果
     """
-    with open(path_corpus, 'r', encoding='utf-8-sig') as f:
+    file_path = resolve_path(path_corpus)
+    with file_path.open('r', encoding='utf-8-sig') as f:
         all_sentence = f.readlines()
-        f.close()
     all_sentence = all_sentence[0::2]
     return all_sentence[:limited_lines]
 
@@ -34,9 +36,9 @@ def load_sents2(path_corpus, initial_index, limited_lines=5):
     :param limited_lines: 每一次读取的行数
     :return: 读取的结果
     """
-    with open(path_corpus, 'r', encoding='utf-8-sig') as f:
+    file_path = resolve_path(path_corpus)
+    with file_path.open('r', encoding='utf-8-sig') as f:
         all_sentence = f.readlines()
-        f.close()
     all_sentence = all_sentence[0::2]
     res = all_sentence[initial_index:initial_index + limited_lines]  # 从指定的index开始，提取limited lines行句子
     res2 = []
@@ -55,11 +57,11 @@ def load_sents2(path_corpus, initial_index, limited_lines=5):
 # 加载NER类型标签
 def load_ners(cfg_file='config.ini', section='GLOBAL'):
     cfg = configparser.ConfigParser()
-    cfg.read(cfg_file)
-    ner_types_path = cfg.get(section, 'ner_types_path')
-    with open(ner_types_path, 'r', encoding='UTF-8-sig') as f:
+    cfg_path = resolve_path(cfg_file) if cfg_file != 'config.ini' else CONFIG_PATH
+    cfg.read(cfg_path, encoding='utf-8')
+    ner_types_path = resolve_path(cfg.get(section, 'ner_types_path', fallback='labeled_dataset/NERs/ner_types.csv'))
+    with ner_types_path.open('r', encoding='UTF-8-sig') as f:
         ner_types = f.readlines()
-        f.close()
     ners = []
     if ner_types is not None:
         for item in ner_types:
