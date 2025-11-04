@@ -46,7 +46,11 @@ def as_config_path(path_like: Union[str, Path]) -> str:
         return path.as_posix()
 
 
+def static_root() -> Path:
+    """Return the absolute path of the static assets directory."""
+    return (BASE_PATH / "statics").resolve()
+
+
 def static_path(relative: Union[str, Path]) -> Path:
-    """Return absolute path inside the statics directory."""
-    static_root = BASE_PATH / "statics"
-    return (static_root / relative).resolve()
+    """Return absolute path inside the static assets directory."""
+    return (static_root() / relative).resolve()

@@ -6,7 +6,7 @@
 from datetime import timedelta
 from functools import wraps
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, send_from_directory, session, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
@@ -19,7 +19,7 @@ import json_format
 import list_current_coupus
 import update_config
 from load_corpus import load_ners, load_sents2
-from path_utils import CONFIG_PATH, as_config_path, ensure_directory, static_path
+from path_utils import CONFIG_PATH, as_config_path, ensure_directory, static_root
 
 # 初始化csrf保护机制
 csrf = CSRFProtect()
@@ -54,7 +54,7 @@ def _load_progress(cfg, corpus_mapping):
 
 # 创建APP初始步骤，并且导入bootstrap样式
 def create_app():
-    app2 = Flask(__name__, static_folder='statics', static_url_path='/static')
+    app2 = Flask(__name__)
     Bootstrap(app2)
     csrf.init_app(app2)
     return app2
@@ -211,3 +211,8 @@ def labeled_res():
 def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
+
+
+@app.route('/assets/<path:filename>')
+def assets(filename):
+    return send_from_directory(static_root(), filename)
