@@ -12,11 +12,18 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item active" aria-current="page"><a href="#">语料标注</a></li>
-            <li class="breadcrumb-item "><a href="{{url_for('select_corpus')}}">重新选择语料</a></li>
-            <li class="breadcrumb-item "><a href="{{url_for('index')}}">返回登录</a></li>
+            <li class="breadcrumb-item "><a href="{{url_for('select_corpus')}}">刷新语料列表</a></li>
+            <li class="breadcrumb-item "><a href="{{url_for('logout')}}">退出登录</a></li>
         </ol>
     </nav>
 </div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}" role="alert" style="margin: 0 1rem;">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 {% if not corpus %}
 <div class="alert alert-warning" role="alert" style="margin: 0 1rem;">
     未找到待标注的语料，请检查配置或上传新的语料文件。

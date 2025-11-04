@@ -10,9 +10,16 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item active" aria-current="page"><a href="#">语料标注</a></li>
         <li class="breadcrumb-item "><a href="{{url_for('select_corpus')}}">重新选择语料</a></li>
-        <li class="breadcrumb-item "><a href="{{url_for('index')}}">返回登录</a></li>
+        <li class="breadcrumb-item "><a href="{{url_for('logout')}}">退出登录</a></li>
     </ol>
 </nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <div class="card pull-left" style="width: 80%; position: absolute; margin-left: 15px">
     <!--    需要传一个参数过去，让传递的参数作为命名文件-->
     <form action="{{url_for('labeled_res', rename=path)}}" method="post" class="form-inline">

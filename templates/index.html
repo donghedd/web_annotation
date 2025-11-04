@@ -13,14 +13,32 @@
 </div>
 <br>
 <form method="POST" action="/" style="width:40%; margin: 0px 30%">
-    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    {% if logged_in_user %}
+    <div class="alert alert-info" role="alert">
+        当前已登录为 {{ logged_in_user }} 。<a href="{{ url_for('logout') }}">点击此处退出</a>
+    </div>
+    {% endif %}
     <div class="form-group">
-        <label for="">用户名(username):</label>
-        <input type="text" class="form-control" id="username" name="username1">
+        <label for="{{ form.name.id }}">用户名(username):</label>
+        {{ form.name(class_='form-control') }}
+        {% for error in form.name.errors %}
+        <small class="text-danger">{{ error }}</small>
+        {% endfor %}
     </div>
     <div class="form-group">
-        <label for="">密 码(password):</label>
-        <input type="password" class="form-control" id="pwd" name="pwd">
+        <label for="{{ form.pwd.id }}">密 码(password):</label>
+        {{ form.pwd(class_='form-control') }}
+        {% for error in form.pwd.errors %}
+        <small class="text-danger">{{ error }}</small>
+        {% endfor %}
     </div>
 
     <input class="btn btn-primary" type="submit" value="登录(submit)">
