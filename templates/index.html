@@ -21,11 +21,6 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-    {% if logged_in_user %}
-    <div class="alert alert-info" role="alert">
-        当前已登录为 {{ logged_in_user }} 。<a href="{{ url_for('logout') }}">点击此处退出</a>
-    </div>
-    {% endif %}
     <div class="form-group">
         <label for="{{ form.name.id }}">用户名(username):</label>
         {{ form.name(class_='form-control') }}

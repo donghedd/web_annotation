@@ -44,3 +44,9 @@ def as_config_path(path_like: Union[str, Path]) -> str:
         return relative.as_posix()
     except ValueError:
         return path.as_posix()
+
+
+def static_path(relative: Union[str, Path]) -> Path:
+    """Return absolute path inside the statics directory."""
+    static_root = BASE_PATH / "statics"
+    return (static_root / relative).resolve()
