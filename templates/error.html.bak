@@ -3,9 +3,10 @@
 
 {% block content %}
     <div class="card" style="width: 32rem; margin: 50px auto">
+      <img  class="card-img-top" alt="...">
       <div class="card-body">
         <h5 class="card-title">❌错误！</h5>
-        <img src="/static/error.jpeg" class="card-img-top" alt="错误提示图片">
+        <img src="{{ url_for('assets', filename='error.jpeg') }}" class="card-img-top" alt="错误提示图片">
         {% if error_msg %}
         <p class="card-text">{{error_msg}}</p>
         {% endif %}

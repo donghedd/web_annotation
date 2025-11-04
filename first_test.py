@@ -6,7 +6,7 @@
 from datetime import timedelta
 from functools import wraps
 
-from flask import Flask, flash, redirect, render_template, request, send_from_directory, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
@@ -212,7 +212,3 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
 
-
-@app.route('/assets/<path:filename>')
-def assets(filename):
-    return send_from_directory(static_root(), filename)
