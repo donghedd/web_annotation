@@ -20,32 +20,32 @@ def update_config(item, value, cfg_file='config.ini', section='INITIAL'):
     cfg = configparser.ConfigParser()
     cfg_path = _resolve_config(cfg_file)
     cfg.read(cfg_path, encoding='utf-8')
-    if section in cfg.sections() and item in cfg[section].keys():
-        cfg.set(section, item, str(value))
-        with cfg_path.open('w', encoding='utf-8') as config_stream:
-            cfg.write(config_stream)
-        return True
-    else:
-        return "section or item is not exist!"
+    if section not in cfg.sections():
+        cfg.add_section(section)
+    cfg.set(section, item, str(value))
+    with cfg_path.open('w', encoding='utf-8') as config_stream:
+        cfg.write(config_stream)
+    return True
 
 
 def update_config_keys(keysets, cfg_file='config.ini', section='INITIAL'):
     cfg = configparser.ConfigParser()
     cfg_path = _resolve_config(cfg_file)
     cfg.read(cfg_path, encoding='utf-8')
-    if section in cfg.sections():
-        cfg_dict = dict(cfg[section])
-        origin_keys = cfg_dict.keys()
-        new_cfg_dict = {}
-        for item, origin_key in zip(keysets, origin_keys):
-            # print(item + 'vs' + origin_key) # 调试输出之用
-            new_cfg_dict[item] = cfg_dict[origin_key]
-            cfg[section] = new_cfg_dict
-            with cfg_path.open('w', encoding='utf-8') as config_stream:
-                cfg.write(config_stream)
-        return True
+    if section not in cfg.sections():
+        cfg.add_section(section)
+        existing_values = {}
     else:
-        return "section is not exist!"
+        existing_values = dict(cfg[section])
+
+    new_cfg_dict = {}
+    for item in keysets:
+        new_cfg_dict[item] = existing_values.get(item, '0')
+
+    cfg[section] = new_cfg_dict
+    with cfg_path.open('w', encoding='utf-8') as config_stream:
+        cfg.write(config_stream)
+    return True
 
 
 def check_login(accountName, password):

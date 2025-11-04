@@ -96,9 +96,17 @@ def select_corpus():
         update_config.update_config_keys(all_corpus.keys())
     cfg = configparser.ConfigParser()
     cfg.read(CONFIG_PATH, encoding='utf-8')
-    global_progress = _load_progress(cfg, all_corpus) if all_corpus else []
+    raw_progress = _load_progress(cfg, all_corpus) if all_corpus else []
+    progress = []
+    if all_corpus:
+        for idx, (path, total_lines) in enumerate(all_corpus.items()):
+            done = raw_progress[idx] if idx < len(raw_progress) else 0
+            total_sentences = int(round((total_lines + 1) / 2))
+            if done > total_sentences:
+                done = total_sentences
+            progress.append(done)
     username = session.get('username', '无名英雄')
-    return render_template('select_corpus.html', form=form, corpus=all_corpus, progress=global_progress,
+    return render_template('select_corpus.html', form=form, corpus=all_corpus, progress=progress,
                            name=username)
 
 
@@ -211,4 +219,3 @@ def labeled_res():
 def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
-
